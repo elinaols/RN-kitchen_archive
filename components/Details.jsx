@@ -1,15 +1,31 @@
 import React, {useEffect, useState} from "react"
-import {StyleSheet, Text, View, ActivityIndicator, SafeAreaView, ImageBackground, ScrollView} from "react-native"
+import {
+	StyleSheet,
+	Text,
+	View,
+	ActivityIndicator,
+	SafeAreaView,
+	ImageBackground,
+	ScrollView,
+	TextInput,
+	Pressable,
+} from "react-native"
 import FetchData from "../features/FetchData"
 import {spacing, fontSizes} from "../utils/sizes"
 import {IconButton} from "react-native-paper"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import {colors} from "../utils/colors"
 
-export default function Details({route}) {
+export default function Details({route, navigation}) {
 	const [recepies, setRecepies] = useState([])
 	const [iconColor, setIconColor] = useState()
 	const [pressed, setPressed] = useState(false)
+	const [editMode, setEditMode] = useState(false)
+	const [preparationTime, setPreparationTime] = useState("")
+	const [name, setName] = useState("")
+	const [ingredients, setIngredients] = useState([])
+	const [instructions, setInstructions] = useState([])
+	const image = recepies.image ? recepies.image : "https://webbkurs.ei.hv.se/~elol0031/images/preparing.webp"
 
 	// Recevies the id to be able to fetch and display the specific recepie
 	const {id} = route.params
@@ -28,51 +44,77 @@ export default function Details({route}) {
 		}))
 	}
 
-	const Recepie = ({recepies}) => (
-		<>
-			<Text style={{fontSize: fontSizes.subtitle, paddingHorizontal: spacing.md}}>{recepies.name}</Text>
-			<Text style={{paddingHorizontal: spacing.md}}>{recepies.preparationTime + ' min'}</Text>
-			{/*
-				Wraps the ingredients and instructions to a scroll view to allow the user to scroll through all the retrieved data
-			*/}
-			<ScrollView style={{paddingBottom: spacing.lg, paddingTop: spacing.md}}>
-				<View>
-					{recepies.ingredients &&
-						recepies.ingredients.map((ingredient, index) => (
-							<View
-								key={index}
-								style={{
-									flex: 1,
-									flexDirection: "row",
-									alignItems: "center",
-									paddingBottom: spacing.xs,
-									paddingHorizontal: spacing.md,
-								}}>
-								<IconButton
-									icon={pressed[index] ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
-									size={24}
-									iconColor={colors.green}
-									style={{margin: 0}}
-									onPress={() => checkToggle(index)}
-								/>
-								<Text style={{paddingLeft: spacing.xs}}>{ingredient}</Text>
-							</View>
-						))}
-				</View>
-				<View style={{paddingTop: spacing.lg}}>
-					{recepies.ingredients &&
-						recepies.instructions.map((instruction, index) => (
-							<View key={index} style={{flex: 1, flexDirection: "row", paddingHorizontal: spacing.md}}>
-								<Text>{index + 1}. </Text>
-								<Text style={{paddingBottom: spacing.xl, paddingLeft: spacing.xs, flexShrink: 1}}>
-									{instruction}
-								</Text>
-							</View>
-						))}
-				</View>
-			</ScrollView>
-		</>
-	)
+	// Asyncronous function that makes a request to the database to permanently delete a recepie with a specified id
+	const deleteRecepie = async () => {
+		try {
+			const response = await fetch(`https://api-kitchen-archive.onrender.com/recepies/${id}`, {
+				method: "DELETE",
+				headers: {
+					// Tells the server that we expect a json response
+					Accept: "application/json",
+				},
+			})
+
+			// Displays an error message if the HTTP request fails
+			if (!response.ok) throw new Error(`Something went wrong with the HTTP request: ${response.status}`)
+
+			// Receives a response from the database indicating what has been deleted
+			const data = await response.json()
+			console.log("A new recepie has been deleted: ", data)
+
+			return navigation.navigate("Home")
+		} catch (error) {
+			console.error("Something went wrong with the DELETE method", error)
+		}
+	}
+
+	// Sets initial values for useState to display the correct data from the database
+	useEffect(() => {
+		setName(recepies.name)
+		setPreparationTime(recepies.preparationTime)
+		setIngredients(recepies.ingredients)
+		setInstructions(recepies.instructions)
+		// Updates whenever the recepies variable is updated
+	}, [recepies])
+
+	// Makes a request to the database to permanently update a recepie with a specified id
+	const saveInputToDb = async () => {
+		console.log("The updated variables: ", preparationTime, image, instructions, ingredients, name)
+		// Sets the state to true to enable calling the updateRecepie function
+		try {
+			const response = await fetch(`https://api-kitchen-archive.onrender.com/recepies/${id}`, {
+				method: "PUT",
+				headers: {
+					// Tells the server that we expect a json response
+					Accept: "application/json",
+					// Tells the server that the request body is in json format
+					"Content-Type": "application/json",
+				},
+				// Converts JavaScript object into json string
+				body: JSON.stringify({
+					preparationTime: preparationTime,
+					instructions: instructions,
+					ingredients: ingredients,
+					name: name,
+					image: image,
+				}),
+			})
+
+			// Displays an error message if the HTTP request fails
+			if (!response.ok) throw new Error(`Something went wrong with the HTTP request: ${response.status}`)
+
+			// Receives a response from the database indicating what has been deleted
+			const data = await response.json()
+			console.log("A new recepie has been updated: ", data)
+
+			// Sets the state to false to disable edit mode
+			setEditMode(false)
+
+			return navigation.navigate("Home")
+		} catch (error) {
+			console.error("Something went wrong with the PUT method", error)
+		}
+	}
 
 	// Stores a new id into AsyncStorage or if it's already in the storage it will be removed
 	// Code from https://react-native-async-storage.github.io/async-storage/docs/usage
@@ -141,7 +183,151 @@ export default function Details({route}) {
 				{/* 
 					If the specific recepie is retrieved it will be displayed on the screen, otherwise the ActivityIndicator will be shown
 				*/}
-				{recepies ? <Recepie recepies={recepies} /> : <ActivityIndicator size="large" color={colors.green} />}
+				{recepies ? (
+					<>
+						<View style={{flexDirection: "row", alignItems: "top", justifyContent: "space-between"}}>
+							<View style={{paddingHorizontal: spacing.md, flexShrink: 1}}>
+								<Text style={{fontSize: fontSizes.subtitle}}>{name}</Text>
+								<TextInput
+									value={name}
+									onChangeText={(e) => setName(e)}
+									placeholder="Ange receptnamn"
+									editable={editMode}
+									style={{
+										borderWidth: 1,
+										padding: 8,
+										borderRadius: 5,
+										display: editMode ? "flex" : "none",
+									}}
+								/>
+								<Text style={{fontSize: fontSizes.body}}>{`${preparationTime} min`}</Text>
+								<TextInput
+									value={preparationTime}
+									onChangeText={(e) => setPreparationTime(e)}
+									placeholder="Ange tid"
+									editable={editMode}
+									style={{
+										borderWidth: 1,
+										padding: 8,
+										borderRadius: 5,
+										display: editMode ? "flex" : "none",
+									}}
+								/>
+							</View>
+							<View style={{flexDirection: "row"}}>
+								<IconButton
+									icon={"pencil"}
+									size={32}
+									iconColor={colors.green}
+									style={{margin: 0}}
+									// Toggles the value between true and false based on its previous state
+									onPress={() => setEditMode((prev) => !prev)}
+								/>
+								<IconButton
+									icon={"delete-forever"}
+									size={32}
+									iconColor={colors.green}
+									style={{margin: 0}}
+									onPress={() => deleteRecepie()}
+								/>
+							</View>
+						</View>
+						{/*
+					Wraps the ingredients and instructions to a scroll view to allow the user to scroll through all the retrieved data
+				*/}
+						<ScrollView style={{paddingBottom: spacing.lg, paddingTop: spacing.md}}>
+							<View>
+								{recepies.ingredients &&
+									recepies.ingredients.map((ingredient, index) => (
+										<View
+											key={index}
+											style={{
+												flex: 1,
+												flexDirection: "row",
+												alignItems: "center",
+												paddingBottom: spacing.xs,
+												paddingHorizontal: spacing.md,
+											}}>
+											<IconButton
+												// Checks whether the icon is pressed to toggle between the to icons
+												icon={
+													pressed[index]
+														? "checkbox-marked-circle"
+														: "checkbox-blank-circle-outline"
+												}
+												size={24}
+												iconColor={colors.green}
+												style={{margin: 0}}
+												onPress={() => checkToggle(index)}
+											/>
+											<View>
+												<Text>{ingredient}</Text>
+												<TextInput
+													value={ingredients}
+													onChangeText={(e) => {
+														// Saves all the current ingredients to a temporary array
+														const updatedArray = [...ingredients]
+														// Updates the specified ingredients with the new user input
+														updatedArray[index] = e
+														// Updates the array with the new input and keeps the other values as it was before
+														setIngredients(updatedArray)
+													}}
+													placeholder="Ange ny ingrediens"
+													editable={editMode}
+													style={{
+														borderWidth: 1,
+														padding: 8,
+														borderRadius: 5,
+														display: editMode ? "flex" : "none",
+													}}
+												/>
+											</View>
+										</View>
+									))}
+							</View>
+							<View style={{paddingTop: spacing.lg}}>
+								{recepies.ingredients &&
+									recepies.instructions.map((instruction, index) => (
+										<View
+											key={index}
+											style={{flex: 1, flexDirection: "row", paddingHorizontal: spacing.md}}>
+											<View style={{paddingBottom: spacing.md}}>
+												<Text>{`${index + 1}. ${instruction}`}</Text>
+												<TextInput
+													value={instructions}
+													onChangeText={(e) => {
+														// Saves all the current ingredients to a temporary array
+														const updatedArray = [...instructions]
+														// Updates the specified ingredients with the new user input
+														updatedArray[index] = e
+														// Updates the array with the new input and keeps the other values as it was before
+														setInstructions(updatedArray)
+													}}
+													placeholder="Ange ny instruktion"
+													editable={editMode}
+													style={{
+														borderWidth: 1,
+														padding: 8,
+														borderRadius: 5,
+														display: editMode ? "flex" : "none",
+													}}
+												/>
+											</View>
+										</View>
+									))}
+							</View>
+							<View style={{paddingRight: spacing.md, paddingTop: spacing.md}}>
+								<Pressable
+									onPress={editMode ? saveInputToDb : null}
+									style={[styles.button, {alignSelf: "flex-end", marginBottom: spacing.md}]}>
+									<Text style={{color: colors.lightgreen}}>Spara recept</Text>
+								</Pressable>
+							</View>
+						</ScrollView>
+					</>
+				) : (
+					<ActivityIndicator size="large" color={colors.green} />
+				)}
 			</View>
 		</SafeAreaView>
 	)
@@ -164,5 +350,12 @@ const styles = StyleSheet.create({
 		borderTopRightRadius: 40,
 		backgroundColor: "#fff",
 		marginTop: -38,
+	},
+	button: {
+		backgroundColor: colors.green,
+		alignItems: "center",
+		padding: 9,
+		borderRadius: 5,
+		alignSelf: "flex-end",
 	},
 })

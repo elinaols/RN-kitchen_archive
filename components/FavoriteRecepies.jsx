@@ -32,7 +32,7 @@ export default function FavoriteRecepies({navigation}) {
 
 	const Recepie = ({recepies}) => (
 		<>
-			{recepies &&
+			{recepies && (
 				<View style={styles.favoriteRecepies}>
 					{/* 
 						Pressable is used for the entire image to allow navigation to the desired recepie when the image is clicked 
@@ -64,7 +64,7 @@ export default function FavoriteRecepies({navigation}) {
 						</Pressable>
 					</View>
 				</View>
-			}
+			)}
 		</>
 	)
 
@@ -87,7 +87,9 @@ export default function FavoriteRecepies({navigation}) {
 						keyExtractor={(item) => item._id}
 					/>
 				) : (
-					<Text style={{textAlign: 'center', paddingTop: spacing.xs, fontSize: fontSizes.body}}>You haven't saved any recepies here</Text>
+					<Text style={{textAlign: "center", paddingTop: spacing.xs, fontSize: fontSizes.body}}>
+						You haven't saved any recepies here
+					</Text>
 				)}
 			</View>
 		</SafeAreaView>
