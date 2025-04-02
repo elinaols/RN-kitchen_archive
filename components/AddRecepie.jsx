@@ -9,6 +9,7 @@ export default function AddRecepie({navigation}) {
 	const [name, setName] = useState("")
 	const [ingredients, setIngredients] = useState([])
 	const [instructions, setInstructions] = useState([])
+	// The next step is to implement image uploading functionality
 	const image = "https://webbkurs.ei.hv.se/~elol0031/images/preparing.webp"
 	const [ingredientInput, setIngredientInput] = useState([])
 	const [instructionInput, setInstructionInput] = useState([])
