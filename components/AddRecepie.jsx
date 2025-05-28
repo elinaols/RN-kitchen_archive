@@ -3,6 +3,7 @@ import {StyleSheet, Text, View, Pressable, TextInput, ScrollView} from "react-na
 import {spacing, fontSizes} from "../utils/sizes"
 import {colors} from "../utils/colors"
 import {IconButton} from "react-native-paper"
+import prepareFoodImage from '../assets/cook.webp'
 
 export default function AddRecepie({navigation}) {
 	const [preparationTime, setPreparationTime] = useState("")
@@ -11,7 +12,7 @@ export default function AddRecepie({navigation}) {
 	const [instructions, setInstructions] = useState([])
 
 	// The next step in the application is to implement image uploading functionality
-	const image = "https://webbkurs.ei.hv.se/~elol0031/images/preparing.webp"
+	const image = prepareFoodImage;
 	
 	const [ingredientInput, setIngredientInput] = useState([])
 	const [instructionInput, setInstructionInput] = useState([])
