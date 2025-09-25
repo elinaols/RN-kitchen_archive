@@ -3,7 +3,7 @@ import {StyleSheet, Text, View, Pressable, TextInput, ScrollView} from "react-na
 import {spacing, fontSizes} from "../utils/sizes"
 import {colors} from "../utils/colors"
 import {IconButton} from "react-native-paper"
-import prepareFoodImage from '../assets/cook.webp'
+import { API_URL } from "../config"; 
 
 export default function AddRecepie({navigation}) {
 	const [preparationTime, setPreparationTime] = useState("")
@@ -12,7 +12,7 @@ export default function AddRecepie({navigation}) {
 	const [instructions, setInstructions] = useState([])
 
 	// The next step in the application is to implement image uploading functionality
-	const image = prepareFoodImage;
+	const image = 'https://webbkurs.ei.hv.se/~elol0031/images/preparing.webp';
 	
 	const [ingredientInput, setIngredientInput] = useState([])
 	const [instructionInput, setInstructionInput] = useState([])
@@ -53,7 +53,7 @@ export default function AddRecepie({navigation}) {
 	// Asyncronous function that makes a request to the database to permanently save a recepie
 	const saveRecepie = async () => {
 		try {
-			const response = await fetch(`https://api-kitchen-archive.onrender.com/recepies`, {
+			const response = await fetch(`${API_URL}`, {
 				method: "POST",
 				headers: {
 					// Tells the server that we expect a json response
@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 		backgroundColor: colors.white,
 		paddingHorizontal: spacing.sm,
+		paddingTop: spacing.xs
 	},
 	input: {
 		width: "90%",

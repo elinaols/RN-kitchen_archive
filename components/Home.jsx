@@ -1,5 +1,6 @@
 import React, {useState} from "react"
-import {StyleSheet, Text, SafeAreaView, View, FlatList, Pressable, ImageBackground} from "react-native"
+import {StyleSheet, Text, View, FlatList, Pressable, ImageBackground} from "react-native"
+import { SafeAreaView } from 'react-native-safe-area-context'
 import FetchData from "../features/FetchData"
 import {spacing, fontSizes} from "../utils/sizes"
 import {colors} from "../utils/colors"
@@ -34,7 +35,7 @@ export default function Home({navigation}) {
 	)
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={styles.container} edges={['left', 'right']}>
 			<View style={styles.navContainer}>
 				<Text style={{fontSize: fontSizes.heading, paddingTop: spacing.md}}>Alla recept</Text>
 			</View>

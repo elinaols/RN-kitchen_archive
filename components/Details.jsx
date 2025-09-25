@@ -4,17 +4,18 @@ import {
 	Text,
 	View,
 	ActivityIndicator,
-	SafeAreaView,
 	ImageBackground,
 	ScrollView,
 	TextInput,
 	Pressable,
 } from "react-native"
+import { SafeAreaView } from 'react-native-safe-area-context'
 import FetchData from "../features/FetchData"
 import {spacing, fontSizes} from "../utils/sizes"
 import {IconButton} from "react-native-paper"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import {colors} from "../utils/colors"
+import { API_URL } from "../config"; 
 
 export default function Details({route, navigation}) {
 	const [recepies, setRecepies] = useState([])
@@ -47,7 +48,7 @@ export default function Details({route, navigation}) {
 	// Asyncronous function that makes a request to the database to permanently delete a recepie with a specified id
 	const deleteRecepie = async () => {
 		try {
-			const response = await fetch(`https://api-kitchen-archive.onrender.com/recepies/${id}`, {
+			const response = await fetch(`${API_URL}/${id}`, {
 				method: "DELETE",
 				headers: {
 					// Tells the server that we expect a json response
@@ -82,7 +83,7 @@ export default function Details({route, navigation}) {
 		console.log("The updated variables: ", preparationTime, image, instructions, ingredients, name)
 		// Sets the state to true to enable calling the updateRecepie function
 		try {
-			const response = await fetch(`https://api-kitchen-archive.onrender.com/recepies/${id}`, {
+			const response = await fetch(`${API_URL}/${id}`, {
 				method: "PUT",
 				headers: {
 					// Tells the server that we expect a json response
@@ -162,8 +163,8 @@ export default function Details({route, navigation}) {
 	}, [])
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<ImageBackground source={{uri: recepies.image}} style={styles.backgroundWrapper} resizeMode="cover">
+		<SafeAreaView style={styles.container} edges={[]}>
+			<ImageBackground source={{uri: recepies.image || image}} style={styles.backgroundWrapper} resizeMode="cover">
 				<IconButton
 					icon="heart"
 					iconColor={iconColor}
@@ -317,11 +318,14 @@ export default function Details({route, navigation}) {
 									))}
 							</View>
 							<View style={{paddingRight: spacing.md, paddingTop: spacing.md}}>
-								<Pressable
-									onPress={editMode ? saveInputToDb : null}
-									style={[styles.button, {alignSelf: "flex-end", marginBottom: spacing.md}]}>
-									<Text style={{color: colors.lightgreen}}>Spara recept</Text>
-								</Pressable>
+								{editMode ?
+									<Pressable
+										onPress={saveInputToDb}
+										style={[styles.button, {alignSelf: "flex-end", marginBottom: spacing.md}]}>
+										<Text style={{color: colors.lightgreen}}>Spara recept</Text>
+									</Pressable>
+									: null
+								}
 							</View>
 						</ScrollView>
 					</>

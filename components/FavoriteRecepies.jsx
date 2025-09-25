@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react"
-import {StyleSheet, Text, View, FlatList, Pressable, Image, SafeAreaView} from "react-native"
+import {StyleSheet, Text, View, FlatList, Pressable, Image} from "react-native"
+import { SafeAreaView } from 'react-native-safe-area-context'
 import FetchData from "../features/FetchData"
 import {spacing} from "../utils/sizes"
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -69,7 +70,7 @@ export default function FavoriteRecepies({navigation}) {
 	)
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={styles.container} edges={['left', 'right']}>
 			<View style={styles.recepiesWrapper}>
 				{/* 
 					If the length of the id array is greater than 0, the favorite recepies will be fetched from the external API and the state will be updated with the 
