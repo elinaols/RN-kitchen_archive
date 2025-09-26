@@ -14,4 +14,4 @@ of handling asynchronous API calls, performing full CRUD operations, managing st
 - Expo
 - AsyncStorage
 
-[[Se demo](https://img.youtube.com/vi/oNPIJE9Vrgc/0.jpg)](https://youtube.com/shorts/oNPIJE9Vrgc?feature=share)
+[![Se demo](https://img.youtube.com/vi/oNPIJE9Vrgc/hqdefault.jpg)](https://youtube.com/shorts/oNPIJE9Vrgc?feature=share)
